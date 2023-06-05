@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Sheets Data Lookup</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <h1>Contact Lookup</h1>
+  <label for="searchInput">Enter a value to search:</label>
+  <input type="text" id="searchInput">
+  <button onclick="searchData()">Search</button>
+
+  <div id="results"></div>
+
+  <script>
+    // Google Sheets API endpoint URL
+    const sheetsEndpoint = 'https://sheets.googleapis.com/v4/spreadsheets/SPREADSHEET_ID/values/RANGE?key=API_KEY';
+
+    // Replace SPREADSHEET_ID with your actual spreadsheet ID
+    const spreadsheetId = '';
+
+    // Replace RANGE with the sheet and range you want to retrieve, e.g., 'Sheet1!A1:D10'
+    const range = 'Formresponses1!B1:D40';
+
+    // Replace API_KEY with your actual Google Sheets API key
+    const apiKey = '';
+
+    function searchData() {
+      const searchValue = document.getElementById('searchInput').value;
+      const requestUrl = sheetsEndpoint.replace('SPREADSHEET_ID', spreadsheetId)
+                                       .replace('RANGE', range)
+                                       .replace('API_KEY', apiKey);
+
+      fetch(requestUrl)
+        .then(response => response.json())
+        .then(data => {
+          const headers = data.values[0];
+          const results = data.values.slice(1).filter(row => row.includes(searchValue));
+          displayResults(headers, results);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function displayResults(headers, results) {
+      const resultsContainer = document.getElementById('results');
+      resultsContainer.innerHTML = '';
+
+      if (results.length === 0) {
+        resultsContainer.innerHTML = 'No results found.';
+      } else {
+        const table = document.createElement('table');
+
+        // Create table header
+        const tableHeader = document.createElement('tr');
+        headers.forEach(header => {
+          const th = document.createElement('th');
+          th.textContent = header;
+          tableHeader.appendChild(th);
+        });
+        table.appendChild(tableHeader);
+
+        // Create table rows
+        results.forEach(row => {
+          const tableRow = document.createElement('tr');
+          row.forEach(cell => {
+            const tableData = document.createElement('td');
+            tableData.textContent = cell;
+            tableRow.appendChild(tableData);
+          });
+          table.appendChild(tableRow);
+        });
+
+        resultsContainer.appendChild(table);
+      }
+    }
+  </script>
+</body>
+</html>
